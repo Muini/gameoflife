@@ -1,0 +1,27 @@
+{
+    "name": "gameoflife",
+    "description": "Game of life",
+    "version": "1.0.0",
+    "author": "Corentin FLACH <corentin@acti.studio>",
+    "private": true,
+    "license": "MIT",
+    "scripts": {
+        "dev": "parcel -p 5000 ./index.html --no-hmr --no-cache --out-dir dist/",
+        "build": "parcel build ./index.html --no-cache --no-source-maps --detailed-report --out-dir dist/ --public-url /"
+    },
+    "dependencies": {
+        "webfontloader": "^1.6.28"
+    },
+    "devDependencies": {
+        "babel-core": "^6.26.0",
+        "babel-eslint": "^8.2.1",
+        "babel-plugin-prismjs": "^1.0.2",
+        "babel-plugin-transform-runtime": "^6.23.0",
+        "babel-preset-env": "^1.6.1",
+        "babel-runtime": "^6.26.0",
+        "node-sass": "^4.9.2",
+        "parcel-bundler": "^1.9.6",
+        "parcel-plugin-bundle-visualiser": "^1.1.2",
+        "parcel-plugin-livescript": "^1.0.0"
+    }
+}

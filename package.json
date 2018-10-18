@@ -7,7 +7,7 @@
     "license": "MIT",
     "scripts": {
         "dev": "parcel -p 5000 ./index.html --no-hmr --no-cache --out-dir dist/",
-        "build": "parcel build ./index.html --no-cache --no-source-maps --detailed-report --out-dir dist/ --public-url /"
+        "build": "parcel build ./index.html --no-cache --no-source-maps --detailed-report --out-dir dist/ --public-url ./"
     },
     "dependencies": {
         "webfontloader": "^1.6.28"
@@ -15,7 +15,6 @@
     "devDependencies": {
         "babel-core": "^6.26.0",
         "babel-eslint": "^8.2.1",
-        "babel-plugin-prismjs": "^1.0.2",
         "babel-plugin-transform-runtime": "^6.23.0",
         "babel-preset-env": "^1.6.1",
         "babel-runtime": "^6.26.0",

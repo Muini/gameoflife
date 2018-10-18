@@ -1,7 +1,6 @@
-import Game from './game';
+/*import Game from './poo/game';
 
-import LEVEL from './level';
-
-// Game.setup(LEVEL);
 Game.setup(Game.generateLevel(100, 100));
 Game.start();
+*/
+import Game from './ecs/game';

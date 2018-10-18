@@ -8,6 +8,7 @@ class Game{
 
         this.RESOLUTION = 6;
         this.entities = [];
+        this.levelEntitiesPositions = [];
 
         this.draw = this.draw.bind(this);
 
@@ -21,8 +22,8 @@ class Game{
     }
     onMouseMove(e){
         if(!this.isClicking) return;
-        let x = Math.floor(e.offsetX / this.RESOLUTION);
-        let y = Math.floor(e.offsetY / this.RESOLUTION);
+        let x = (e.offsetX / this.RESOLUTION) | 0; 
+        let y = (e.offsetY / this.RESOLUTION) | 0;
         let cell = this.getEntityAt(x, y);
         if (cell && cell.isDead) {
             cell.procreate();
@@ -30,10 +31,13 @@ class Game{
     }
     generateLevel(width, height){
         let level = new Array(width);
+        this.levelEntitiesPositions = new Array(width);
         for (let x = 0; x < level.length; x++) {
             level[x] = new Array(height);
-            for (var y = 0; y < level[x].length; y++) {
-                level[x][y] = Math.floor(Math.random() * width / 6);
+            this.levelEntitiesPositions[x] = new Array(height);
+            for (let y = 0; y < level[x].length; y++) {
+                level[x][y] = (Math.random() * width / 6) | 0;
+                this.levelEntitiesPositions[x][y] = [];
             }
         }
         return level;
@@ -44,7 +48,8 @@ class Game{
 
         for (let x = 0; x < level.length; x++) {
             for (let y = 0; y < level[x].length; y++) {
-                let cell = new Cell(y, x);
+                let cell = new Cell('Cell' + (x+y), y, x);
+                this.levelEntitiesPositions[y][x].push(cell);
                 this.entities.push(cell);
                 switch (level[x][y]) {
                     case 1:
@@ -60,13 +65,17 @@ class Game{
         }
     }
     getEntityAt(x, y) {
-        let e = this.entities.length;
-        while(e--){
+        if (this.levelEntitiesPositions[x] && this.levelEntitiesPositions[x][y] && this.levelEntitiesPositions[x][y])
+            return this.levelEntitiesPositions[x][y][0];
+        else
+            return undefined;
+        /*for (let length = this.entities.length, e = length - 1; e >= 0; --e) {
             if (this.entities[e].x === x && this.entities[e].y === y)
                 return this.entities[e];
-        }
+        }*/
     }
-    start(){
+    start() {
+        this.lastTick = new Date();
         requestAnimationFrame(this.draw);
     }
     draw(){
@@ -74,16 +83,19 @@ class Game{
 
         let now = Date.now();
         let delta = Date.now() - this.lastTick;
-        let fps = Math.floor(1 / delta * 1000);
+        let fps = (1 / delta * 1000) | 0;
 
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        for (let e = 0; e < this.entities.length; e++) {
+        for (let length = this.entities.length, e = length - 1; e >= 0; --e) {
             this.entities[e].update(now, delta);
             this.entities[e].draw(this.ctx);
         }
+        this.ctx.save();
 
         this.ctx.font = "14px Arial";
+        this.ctx.shadowColor = 'rgba(0,0,0,1.0)';
+        this.ctx.shadowBlur = 6;
         this.ctx.fillStyle = 'rgba(255,255,255,1.0)';
         this.ctx.fillText("Game of Life", 10, 20);
 
@@ -93,6 +105,8 @@ class Game{
 
         this.ctx.fillStyle = 'rgba(255,255,255,0.6)';
         this.ctx.fillText(this.entities.length + " entities", 10, 50);
+
+        this.ctx.restore();
 
         this.lastTick = now;
     }

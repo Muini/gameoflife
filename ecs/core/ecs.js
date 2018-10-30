@@ -30,12 +30,14 @@ const Component = function(name, data){
     }
 }
 
-const System = function (name, onInit, onUpdate) {
+const System = function (name, { onInit, onUpdate, onInitEntity, onUpdateEntity }) {
     return new class System {
         constructor(){
             this.name = name || 'unnamed system';
-            this.init = onInit || function(entity){};
-            this.update = onUpdate || function (entity, time, delta) {};
+            this.init = onInit || function(){};
+            this.initEntity = onInitEntity || function (entity) {};
+            this.update = onUpdate || function (time, delta) {};
+            this.updateEntity = onUpdateEntity || function (entity, time, delta) {};
             this.entities = [];
         }
         addEntity (entity) {
@@ -58,16 +60,22 @@ const Scene = function(name){
             return _id;
         }
         init() {
+            for (let length2 = this.systems.length, s = length2 - 1; s >= 0; --s) {
+                this.systems[s].init();
+            }
             for (let length = this.entities.length, e = length - 1; e >= 0; --e) {
                 for (let length2 = this.systems.length, s = length2 - 1; s >= 0; --s) {
-                    this.systems[s].init(this.entities[e]);
+                    this.systems[s].initEntity(this.entities[e]);
                 }
             }
         }
         update(time, delta) {
+            for (let length2 = this.systems.length, s = length2 - 1; s >= 0; --s) {
+                this.systems[s].update(time, delta);
+            }
             for (let length = this.entities.length, e = length - 1; e >= 0; --e) {
                 for (let length2 = this.systems.length, s = length2 - 1; s >= 0; --s) {
-                    this.systems[s].update(this.entities[e], time, delta);
+                    this.systems[s].updateEntity(this.entities[e], time, delta);
                 }
             }
         }

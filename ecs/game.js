@@ -83,7 +83,7 @@ ECS.$update = function(){
     this.$lastTick = now;
 }
 
-ECS.newScene('gameoflife');
+ECS.newScene('gameoflife', ['CellThink', 'CellLiving', 'CellRenderer']);
 
 ECS.Component('position', {
     x: 0,
@@ -94,6 +94,7 @@ ECS.Component('state', {
     isDead: true,
     wasDead: true,
     shouldDraw: true,
+    willBeDead: false,
 })
 
 ECS.Component('colors', {
@@ -104,34 +105,29 @@ ECS.Component('colors', {
 })
 
 ECS.Component('think', {
-    delay: 1,
+    delay: 30,
     timeElapsed: 0,
     neighbors: [],
-    firstThink: true,
 })
 
-ECS.System('CellLiving', 
-    // Init
-    function(entity){
-
-        this.getAdjacentCells = entity => {
-            for (let x = -1; x < 2; x++) {
-                for (let y = -1; y < 2; y++) {
-                    if (!(x === 0 && y === 0)) {
-                        let adjCell = ECS.$getEntityAt(entity.position.x + x, entity.position.y + y);
-                        if (adjCell && adjCell.name === 'Cell') {
-                            entity.think.neighbors.push(adjCell);
-                        }
+ECS.System('CellThink', {
+    onInitEntity: function(entity){
+        //Get neightbors
+        for (let x = -1; x < 2; x++) {
+            for (let y = -1; y < 2; y++) {
+                if (!(x === 0 && y === 0)) {
+                    let adjCell = ECS.$getEntityAt(entity.position.x + x, entity.position.y + y);
+                    if (adjCell && adjCell.name === 'Cell') {
+                        entity.think.neighbors.push(adjCell);
                     }
                 }
             }
         }
-        
-        this.think = entity => {
-            if (entity.think.firstThink) {
-                this.getAdjacentCells(entity);
-                entity.think.firstThink = false;
-            }
+    },
+    onUpdateEntity: function(entity, time, delta){
+        entity.think.timeElapsed += delta;
+        if (entity.think.timeElapsed >= entity.think.delay) {
+
             let count = 0;
             for (let i = 0; i < entity.think.neighbors.length; i++) {
                 if (!entity.think.neighbors[i].state.isDead)
@@ -140,49 +136,42 @@ ECS.System('CellLiving',
             if (entity.state.isDead) {
                 if (count === 3) {
                     // Procreate
-                    entity.state.isDead = false;
-                    entity.state.shouldDraw = true;
+                    entity.state.willBeDead = false;
+                    // entity.state.shouldDraw = true;
                 }
             } else {
                 if (count < 2 || count > 3) {
                     // Die
-                    entity.state.isDead = true;
-                    entity.state.shouldDraw = true;
+                    entity.state.willBeDead = true;
+                    // entity.state.shouldDraw = true;
                 }
             }
-        }
-    }, 
-    // Update
-    function (entity, time, delta) {
-        if (!entity.think) return;
-        entity.think.timeElapsed += delta;
-        if (entity.think.timeElapsed >= entity.think.delay) {
-            this.think(entity);
+
             entity.think.timeElapsed = 0;
         }
     }
-);
+});
 
-ECS.System('CellRenderer',
-    function(entity){
+ECS.System('CellLiving', {
+    onUpdateEntity: function (entity, time, delta) {
+        entity.state.isDead = entity.state.willBeDead;
+    }
+});
 
-    },
-    function(entity, time, delta){
-        if(!entity.state || !entity.colors || !entity.position) return;
-        if (!entity.state.shouldDraw) return;
+ECS.System('CellRenderer', {
+    onUpdateEntity: function (entity, time, delta){
+        if (!entity.state || !entity.colors || !entity.position) return;
+        // if (!entity.state.shouldDraw) return;
         let color = '';
         if (entity.state.isDead) {
-            if (!entity.state.wasDead) {
-                color = entity.colors.dying;
-                entity.state.wasDead = true;
+            if (!entity.state.willBeDead) {
+                color = entity.colors.create;
             } else {
                 color = entity.colors.dead;
-                entity.state.shouldDraw = false;
             }
         } else {
-            if (entity.state.wasDead) {
-                color = entity.colors.create;
-                entity.state.wasDead = false;
+            if (entity.state.willBeDead) {
+                color = entity.colors.dying;
             } else {
                 color = entity.colors.alive;
             }
@@ -194,7 +183,7 @@ ECS.System('CellRenderer',
         ECS.$ctx.fill();
         ECS.$ctx.closePath();
         */
-        
+
         ECS.$ctx.fillStyle = color;
         ECS.$ctx.fillRect(
             entity.position.x * ECS.$RESOLUTION,
@@ -202,11 +191,11 @@ ECS.System('CellRenderer',
             ECS.$RESOLUTION,
             ECS.$RESOLUTION
         );
-        
     }
-);
+});
 
 ECS.$setup(ECS.$generateLevel(100, 100));
 ECS.$start();
 
-console.log(ECS);
+window.ECS = ECS;
+console.log(ECS.scene.entities[0]);

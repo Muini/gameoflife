@@ -1,4 +1,5 @@
-import UUID from "./utils/uuid";
+import UUID from "./utils/uuid"
+import Data from './utils/data'
 
 const Entity = function (name) {
     const _id = UUID();
@@ -10,10 +11,7 @@ const Entity = function (name) {
         addComponent(component) {
             if(this[component.name] != undefined) return;
             this.components.push(component.name);
-            this[component.name] = {};
-            for (let key in component.data) {
-                this[component.name][key] = component.data[key];
-            }
+            this[component.name] = new Data(component.data)
         }
         get id(){
             return _id;
@@ -60,24 +58,30 @@ const Scene = function(name){
             return _id;
         }
         init() {
-            for (let length2 = this.systems.length, s = length2 - 1; s >= 0; --s) {
+            const now = performance.now()
+            for (let s = 0; s < this.systems.length; s++) {
                 this.systems[s].init();
             }
-            for (let length = this.entities.length, e = length - 1; e >= 0; --e) {
-                for (let length2 = this.systems.length, s = length2 - 1; s >= 0; --s) {
+            for (let e = 0; e < this.entities.length; e++) {
+                for (let s = 0; s < this.systems.length; s++) {
                     this.systems[s].initEntity(this.entities[e]);
                 }
             }
+            Data.apply()
+            console.log('init took', performance.now() - now, 'ms')
         }
         update(time, delta) {
-            for (let length2 = this.systems.length, s = length2 - 1; s >= 0; --s) {
-                this.systems[s].update(time, delta);
+            const now = performance.now()
+            for (let s = 0; s < this.systems.length; s++) {
+                this.systems[s].update();
             }
-            for (let length = this.entities.length, e = length - 1; e >= 0; --e) {
-                for (let length2 = this.systems.length, s = length2 - 1; s >= 0; --s) {
-                    this.systems[s].updateEntity(this.entities[e], time, delta);
+            for (let e = 0; e < this.entities.length; e++) {
+                for (let s = 0; s < this.systems.length; s++) {
+                    this.systems[s].updateEntity(this.entities[e]);
                 }
             }
+            Data.apply()
+            console.log('update took', performance.now() - now, 'ms')
         }
         destroy(){}
     }
@@ -104,7 +108,7 @@ export const ECS = (function () {
             // Create new entity with components
             const entity = new Entity(name);
             this.scene.entities.push(entity);
-            for (let length = components.length, c = length - 1; c >= 0; --c) {
+            for (let c = 0; c < components.length; c++) {
                 const component = new Component(components[c], this.scene.components[components[c]]);
                 entity.addComponent(component);
             }

@@ -9,18 +9,22 @@ ECS.Component('awarness', { radius: 10, neightboor: [] })
 const bird = ECS.Entity('Bird', ['position', 'awarness'])
 
 bird.position.x = 256
-bird.position.y = bird.position.x
+// bird.position.y = bird.position.x
 console.log(bird.position.y)
 
 ECS.System('Move', {
   onInit: (_) => {},
   onUpdate: (_) => {},
-  onInitEntity: (entity) => {},
+  onInitEntity: (entity) => {
+    entity.position.watch('x', val => {
+        entity.position.y = val
+    })
+  },
   onUpdateEntity: (entity, time, delta) => {
       if(entity.position.x > ECS._canvas.width)
         entity.position.x = 0
       else
-        entity.position.x += 0.1 * delta 
+        entity.position.x += 1 
   }
 })
 
@@ -60,7 +64,11 @@ ECS._start = _ => {
     ECS._raf = requestAnimationFrame(ECS._update);
 }
 ECS._update = _ =>{
-    ECS._raf = requestAnimationFrame(ECS._update);
+    if (!ECS._playOnce) {
+        ECS._raf = requestAnimationFrame(ECS._update);
+    } else { 
+        ECS._playOnce = false 
+    }
 
     let now = Date.now();
     let delta = Date.now() - ECS._lastTick;
@@ -93,3 +101,14 @@ ECS._update = _ =>{
 ECS._setup()
 ECS._start()
 
+document.querySelector('#next').addEventListener('click', (_) => {
+    cancelAnimationFrame(ECS._raf)
+    ECS._playOnce = true
+    requestAnimationFrame(ECS._update)
+})
+document.querySelector('#run').addEventListener('click', (_) => {
+    requestAnimationFrame(ECS._update)
+})
+document.querySelector('#stop').addEventListener('click', (_) => {
+    cancelAnimationFrame(ECS._raf)
+})

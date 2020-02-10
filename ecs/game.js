@@ -47,7 +47,7 @@ ECS.$start = function () {
   this.scene.init()
   this.$lastTick = Date.now()
   this.$update = this.$update.bind(this)
-  // this.$playOnce = true
+  this.$playOnce = true
   this.$raf = requestAnimationFrame(this.$update)
 }
 ECS.$update = function () {

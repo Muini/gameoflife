@@ -1,18 +1,6 @@
 
 import UUID from './uuid'
-
-
-/*
-    dataMap = {
-        object: {
-            prop1: 0,
-            prop2: 1,
-            prop3: 2
-        }
-    }
-    currentStore = [10, 'stringvalue', 345]
-*/
-
+import clone from './clone'
 
 export const Store = (function () {
     const _MAX_STATES = 1000
@@ -28,8 +16,7 @@ export const Store = (function () {
             for (let prop in object) {
                 const value = object[prop]
                 if(typeof value !== 'function'){
-                    const valueIndex = this.current.length
-                    this.current.push(value)
+                    const valueIndex = _next.length
                     _next.push(value)
                     _dataMap[id][prop] = valueIndex
                 }else{
@@ -45,28 +32,30 @@ export const Store = (function () {
             if (_states.length > _MAX_STATES) {
                 _states.splice(0, 1)
             }
-            _states.push(Object.freeze(_next))
-            _next = [...this.current]
+            _states.push(_next)
             _currentStateIndex = _states.length - 1
+            _next = clone(this.current)
         },
         undo() {
             if (_currentStateIndex - 1 < 0) return
             _currentStateIndex--
-            _next = [...this.current]
+            _next = clone(this.current)
         },
         redo() {
             if (_currentStateIndex + 1 > _states.length - 1) return
             _currentStateIndex++
-            _next = [...this.current]
+            _next = clone(this.current)
         },
         getValue(id, prop){
-            if(!_dataMap[id]) return console.warn('Data.js: (Get) Prop not found', id, prop)
+            if(!_dataMap[id]) return console.error('Data.js: (Get) Prop not existing in data', id, prop)
             const valueIndex = _dataMap[id][prop]
+            if (isNaN(valueIndex)) return console.error('Data.js: (Get) Prop not found in data', id, prop)
             return this.current[valueIndex]
         },
         setValue(id, prop, value){
-            if (!_dataMap[id]) return console.warn('Data.js: (Set) Prop not found', id, prop)
+            if (!_dataMap[id]) return console.error('Data.js: (Set) Prop not existing in data', id, prop)
             const valueIndex = _dataMap[id][prop]
+            if (isNaN(valueIndex)) return console.error('Data.js: (Set) Prop not found in data', id, prop)
             _next[valueIndex] = value
         },
         get current() {
@@ -104,8 +93,9 @@ const Data = function(object){
                     }
                 },
                 set: (obj, prop, val) => {
+                    const prevVal = Store.getValue(this.id, prop)
                     Store.setValue(this.id, prop, val)
-                    this._notify(prop, val)
+                    this._notify(prop, val, prevVal)
                     return true
                 }
             })
@@ -117,13 +107,13 @@ const Data = function(object){
                 _rules[key] = []
             _rules[key].push(rule)
         }
-        _notify(prop, newVal) {
+        _notify(prop, newVal, prevVal) {
             // console.log('notify prop changed', prop, newVal)
             const propRules = _rules[prop]
             if (propRules) {
                 for (let i = 0; i < propRules.length; i++) {
                     const propRule = propRules[i]
-                    propRule(newVal)
+                    propRule(newVal, prevVal)
                 }
             }
         }

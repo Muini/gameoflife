@@ -89,11 +89,11 @@ const Scene = function(name){
         update(time, delta) {
             const now = performance.now()
             for (let s = 0; s < this.systems.length; s++) {
-                this.systems[s].update();
+                this.systems[s].update(time, delta);
             }
             for (let e = 0; e < this.entities.length; e++) {
                 for (let s = 0; s < this.systems.length; s++) {
-                    this.systems[s].updateEntity(this.entities[e]);
+                    this.systems[s].updateEntity(this.entities[e], time, delta);
                 }
             }
             Store.apply()

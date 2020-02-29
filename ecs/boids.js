@@ -6,24 +6,29 @@ ECS.newScene('Boids')
 ECS.Component('position', { x: 0, y: 0 })
 ECS.Component('awarness', { radius: 10, neightboor: [] })
 
-const bird = ECS.Entity('Bird', ['position', 'awarness'])
-
-bird.position.x = 256
+for (let i = 0; i < 100; i++) {
+    const bird = ECS.Entity('Bird', ['position', 'awarness'])
+    bird.position.x = Math.random() * 512 << 0
+    bird.position.y = Math.random() * 512 << 0
+}
+console.log(ECS)
 // bird.position.y = bird.position.x
 
 ECS.System('Move', {
   onInit: (_) => {},
   onUpdate: (_) => {},
   onInitEntity: (entity) => {
-    entity.position.watch('x', val => {
-        entity.position.y = val
-    })
+    /*entity.position.watch('x', (val, prevVal) => {
+        entity.position.y += val - prevVal
+    })*/
   },
   onUpdateEntity: (entity, time, delta) => {
-      if(entity.position.x > ECS._canvas.width)
+    entity.position.x += 1
+
+    if(entity.position.x > ECS._canvas.width)
         entity.position.x = 0
-      else
-        entity.position.x += 1 
+    if(entity.position.y > ECS._canvas.height)
+        entity.position.y = 0
   }
 })
 

@@ -3,8 +3,8 @@
 Game.setup(Game.generateLevel(100, 100));
 Game.start();
 */
-import Game from './ecs/game'
-// import Boids from './ecs/boids';
+// import Game from './ecs/game'
+import Boids from './ecs/boids';
 
 /*
 import Data, { Store } from './ecs/core/utils/data'

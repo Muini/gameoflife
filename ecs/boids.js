@@ -10,7 +10,6 @@ const bird = ECS.Entity('Bird', ['position', 'awarness'])
 
 bird.position.x = 256
 // bird.position.y = bird.position.x
-console.log(bird.position.y)
 
 ECS.System('Move', {
   onInit: (_) => {},
@@ -33,7 +32,6 @@ ECS.System('Render', {
     onUpdate: (_) => { },
     onInitEntity: (entity) => { },
     onUpdateEntity: (entity) => {
-        console.log('render')
         ECS._ctx.fillStyle = `rgba(255, 255, 255, 1.0)`
         ECS._ctx.fillRect(
             entity.position.x,
@@ -43,9 +41,6 @@ ECS.System('Render', {
         )
     }
 })
-
-console.log(ECS)
-
 
 ECS._canvas = document.getElementById("game");
 ECS._ctx = ECS._canvas.getContext('2d');
@@ -61,6 +56,7 @@ ECS._start = _ => {
     ECS.scene.init();
     ECS._lastTick = Date.now();
     ECS._update = ECS._update.bind(ECS);
+    ECS._playOnce = true
     ECS._raf = requestAnimationFrame(ECS._update);
 }
 ECS._update = _ =>{

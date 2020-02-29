@@ -10,6 +10,7 @@
         "build": "parcel build ./index.html --no-cache --no-source-maps --detailed-report --out-dir dist/ --public-url ./"
     },
     "dependencies": {
+        "rfdc": "^1.1.4",
         "webfontloader": "^1.6.28"
     },
     "devDependencies": {

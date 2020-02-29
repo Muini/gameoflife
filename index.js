@@ -3,11 +3,11 @@
 Game.setup(Game.generateLevel(100, 100));
 Game.start();
 */
-// import Game from './ecs/game'
-import Boids from './ecs/boids';
+import Game from './ecs/game'
+// import Boids from './ecs/boids';
 
 /*
-import Data from './ecs/core/utils/data'
+import Data, { Store } from './ecs/core/utils/data'
 
 const person = new Data({
     name: "Philipe",
@@ -20,19 +20,23 @@ const person = new Data({
     }
 })
 
-// data.connect(person.money, person.class, (inValue, curValue) => curValue++)
+Store.apply()
 
+// data.connect(person.money, person.class, (inValue, curValue) => curValue++)
+console.log(person)
 person.watch('money', newVal => {
     person.class += 1
 })
 
+console.log(person.watch)
+
 person.money += 100
 
-person.stats.health += 1
+// person.stats.health += 1
 
+Store.apply()
 
-Data.apply()
-
-// Data.undo()
-
-console.log(person)*/
+console.log(person.money)
+// Store.undo()
+// console.log(person.money)
+*/

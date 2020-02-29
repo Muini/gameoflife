@@ -5,6 +5,7 @@ ECS.$canvas = document.getElementById('game')
 ECS.$ctx = ECS.$canvas.getContext('2d')
 
 ECS.$generateLevel = function (width, height) {
+  const now = performance.now()
   const level = new Array(width)
   this.$levelEntitiesPositions = new Array(width)
   for (let x = 0; x < level.length; x++) {
@@ -15,9 +16,11 @@ ECS.$generateLevel = function (width, height) {
       this.$levelEntitiesPositions[x][y] = []
     }
   }
+  console.log('Level generation took', performance.now() - now, 'ms')
   return level
 }
 ECS.$setup = function (level) {
+  const now = performance.now()
   this.$canvas.width = level.length * this.$RESOLUTION
   this.$canvas.height = level[0].length * this.$RESOLUTION
 
@@ -39,6 +42,8 @@ ECS.$setup = function (level) {
       }
     }
   }
+
+  console.log('Populate level took', performance.now() - now, 'ms')
 }
 ECS.$getEntityAt = function (x, y) {
   if (this.$levelEntitiesPositions[x] && this.$levelEntitiesPositions[x][y] && this.$levelEntitiesPositions[x][y]) { return this.$levelEntitiesPositions[x][y][0] } else { return null }
@@ -234,5 +239,3 @@ document.querySelector('#run').addEventListener('click', (_) => {
 document.querySelector('#stop').addEventListener('click', (_) => {
   cancelAnimationFrame(ECS.$raf)
 })
-
-console.log(ECS.scene.entities[0])

@@ -1,16 +1,32 @@
 import UUID from "./utils/uuid"
-import Data from './utils/data'
+import clone from "./utils/clone"
+import Data, { Store } from './utils/data'
 
 const Entity = function (name) {
     const _id = UUID();
+    // const _data = new Data({})
+    // console.log(_data)
     return new class Entity {
         constructor(){
             this.name = name || 'unnamed entity';
             this.components = []; // List of components a.k.a componentes database
         }
         addComponent(component) {
-            if(this[component.name] != undefined) return;
-            this.components.push(component.name);
+            if(this[component.name] != undefined) return
+            this.components.push(component.name)
+            /*_data.add(component.data)
+            this[component.name] = {}
+            for (let prop in component.data) {
+                const value = component.data[prop];
+                this[component.name][prop] = {
+                    get(){
+                        return _data[prop]
+                    },
+                    set(value){
+                        _data[prop] = value
+                    }
+                }
+            }*/
             this[component.name] = new Data(component.data)
         }
         get id(){
@@ -23,7 +39,7 @@ const Component = function(name, data){
     return new class Component{
         constructor(){
             this.name = name || 'unnamed component';
-            this.data = JSON.parse(JSON.stringify(data));
+            this.data = clone(data);
         }
     }
 }
@@ -67,8 +83,8 @@ const Scene = function(name){
                     this.systems[s].initEntity(this.entities[e]);
                 }
             }
-            Data.apply()
-            console.log('init took', performance.now() - now, 'ms')
+            Store.apply()
+            console.log('init took', performance.now() - now, 'ms\n', 'Store length:', Store.current.length)
         }
         update(time, delta) {
             const now = performance.now()
@@ -80,7 +96,7 @@ const Scene = function(name){
                     this.systems[s].updateEntity(this.entities[e]);
                 }
             }
-            Data.apply()
+            Store.apply()
             console.log('update took', performance.now() - now, 'ms')
         }
         destroy(){}

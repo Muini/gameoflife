@@ -1,34 +1,69 @@
 import { ECS } from './core/ecs'
+import distance from './core/utils/distance'
 
 // ECS.Scene('Boids', ['Move', 'Render'])
 ECS.newScene('Boids')
 
 ECS.Component('position', { x: 0, y: 0 })
-ECS.Component('awarness', { radius: 10, neightboor: [] })
+ECS.Component('rotation', { delta: 0 })
+ECS.Component('awarness', { radius: 50 })
 
 for (let i = 0; i < 100; i++) {
-    const bird = ECS.Entity('Bird', ['position', 'awarness'])
+    const bird = ECS.Entity('Bird' + i, ['position', 'awarness', 'rotation'])
     bird.position.x = Math.random() * 512 << 0
     bird.position.y = Math.random() * 512 << 0
+    bird.rotation.delta = Math.random() * 360 << 0 * Math.PI / 180
 }
 console.log(ECS)
-// bird.position.y = bird.position.x
 
 ECS.System('Move', {
   onInit: (_) => {},
   onUpdate: (_) => {},
-  onInitEntity: (entity) => {
-    /*entity.position.watch('x', (val, prevVal) => {
-        entity.position.y += val - prevVal
-    })*/
-  },
+  onInitEntity: (entity) => {},
   onUpdateEntity: (entity, time, delta) => {
-    entity.position.x += 1
+    const pos = { x: entity.position.x, y: entity.position.y }
+    const radius = entity.awarness.radius
+    let rotation = entity.rotation.delta
 
-    if(entity.position.x > ECS._canvas.width)
-        entity.position.x = 0
-    if(entity.position.y > ECS._canvas.height)
-        entity.position.y = 0
+    // Avoid neighboor
+    let closestDistance = radius
+    let closestNeighboor = null
+    for (let i = 0; i < ECS.scene.entities.length; i++) {
+        const neighboor = ECS.scene.entities[i]
+        if(neighboor !== entity){
+            const entityPos = { x: neighboor.position.x, y: neighboor.position.y }
+            const dist = distance(entityPos, pos)
+            if (dist < radius ){
+                if (dist < closestDistance) {
+                    closestDistance = dist
+                    closestNeighboor = neighboor
+                }
+            }
+        }
+    }
+    if(closestNeighboor){
+        const direction = Math.sin(rotation) > Math.sin(closestNeighboor.rotation.delta)  ? -1 : 1
+        rotation += (1 - (closestDistance / radius)) * (Math.PI) * direction * 0.1
+    }
+    
+    // Move forward
+    const speed = 2
+    pos.x += Math.cos(rotation) * speed
+    pos.y += Math.sin(rotation) * speed
+
+    // Keep in bound
+    if(pos.x > ECS._canvas.width)
+        pos.x = 0
+    if(pos.y > ECS._canvas.height)
+        pos.y = 0
+    if (pos.x < 0)
+        pos.x = ECS._canvas.width
+    if (pos.y < 0)
+        pos.y = ECS._canvas.height
+    
+    entity.position.x = pos.x
+    entity.position.y = pos.y
+    entity.rotation.delta = rotation
   }
 })
 
@@ -37,13 +72,15 @@ ECS.System('Render', {
     onUpdate: (_) => { },
     onInitEntity: (entity) => { },
     onUpdateEntity: (entity) => {
+        ECS._ctx.translate(entity.position.x, entity.position.y)
+        ECS._ctx.rotate(entity.rotation.delta)
         ECS._ctx.fillStyle = `rgba(255, 255, 255, 1.0)`
-        ECS._ctx.fillRect(
-            entity.position.x,
-            entity.position.y,
-            10,
-            10
-        )
+        ECS._ctx.beginPath()
+        ECS._ctx.moveTo(8, 0)
+        ECS._ctx.lineTo(-8, -5)
+        ECS._ctx.lineTo(-8, 5)
+        ECS._ctx.fill()
+        ECS._ctx.setTransform(1, 0, 0, 1, 0, 0)
     }
 })
 
